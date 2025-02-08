@@ -13,6 +13,6 @@ public class CostumerEntity
     [Column(TypeName ="nvarchar(50)")]
     public string CostumerName { get; set; } = null!;
 
-    public ICollection<ProjectEntity> Projects { get; set; } = [];
+    public virtual ICollection<ProjectEntity> Projects { get; set; } = [];
 }
 

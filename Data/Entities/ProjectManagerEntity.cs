@@ -24,5 +24,5 @@ public class ProjectManagerEntity
     [Column(TypeName = "nvarchar(20)")]
     public string? Phone { get; set; }
 
-    public ICollection<ProjectEntity> Projects { get; set; } = [];
+    public virtual ICollection<ProjectEntity> Projects { get; set; } = [];
 }
