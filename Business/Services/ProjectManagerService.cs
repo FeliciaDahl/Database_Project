@@ -19,48 +19,58 @@ public class ProjectManagerService : IProjectManagerService
     {
         _projectManagerRepository = projectManagerRepository;
     }
-    /// Nästa steg är att koll om det är bättre att skriva som Costumer . är det bättre kod. Sedan skapa Interfaces . Nästa steg kolla om koden fungerar.
-   //Kolla igenom all kod i services så det ser rätt ut, inget blandat enhetligt osv ! BRA JOBBAT IDAG ! IMORGON KÖR VI IGEN! <3
-    public async Task<ProjectManagerEntity> GetOrCreateProjectManagerAsync(ProjectManagerRegistrationForm form)
+   
+    public async Task<ProjectManager> CreateProjectManagerAsync(ProjectManagerRegistrationForm form)
     {
+      
         if (string.IsNullOrWhiteSpace(form.Email))
             return null!;
 
-        var projectManager = await _projectManagerRepository.GetAsync(pm => pm.Email.ToLower() == form.Email.Trim().ToLower());
+        await _projectManagerRepository.BeginTransactionAsync();
 
-        if (projectManager != null)
-            return projectManager;
+        var projectManagerEntity = await _projectManagerRepository.GetAsync(pm => pm.Email.ToLower() == form.Email.Trim().ToLower());
 
-        try
-        {
-            projectManager = ProjectManagerFactory.Create(form);
-            return await _projectManagerRepository.CreateAsync(projectManager);
+        if (projectManagerEntity == null)
+        { 
+            try
+            {
+                projectManagerEntity = ProjectManagerFactory.Create(form);
+                _projectManagerRepository.Add(projectManagerEntity);
+                await _projectManagerRepository.SaveAsync();
+
+                await _projectManagerRepository.CommitTransactionAsync();
+
+               
+            }
+            catch (Exception ex)
+            {
+                await _projectManagerRepository.RollbackTransactionAsync();
+
+                Debug.WriteLine($"Error: {ex.Message}");
+                return null!;
+            }
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error: {ex.Message}");
-            return null!;
-        }
+            return ProjectManagerFactory.Create(projectManagerEntity);
     }
 
     public async Task<IEnumerable<ProjectManager>> GetAllProjectManagersAsync()
     {
-        var pmEntity = await _projectManagerRepository.GetAllAsync();
+        var projectManagerEntity = await _projectManagerRepository.GetAllAsync();
 
-        return pmEntity.Select(entity => ProjectManagerFactory.Create(entity));
+        return projectManagerEntity.Select(entity => ProjectManagerFactory.Create(entity));
     }
 
 
     public async Task<ProjectManager?> GetProjectManagerAsync(Expression<Func<ProjectManagerEntity, bool>> expression, Func<IQueryable<ProjectManagerEntity>, IQueryable<ProjectManagerEntity>>? includeExpression = null)
     {
-        var pmEntity = await _projectManagerRepository.GetAsync(expression, includeExpression);
+        var projectManagerEntity = await _projectManagerRepository.GetAsync(expression, includeExpression);
 
-        if (pmEntity == null)
+        if (projectManagerEntity == null)
         {
             return null;
         }
 
-        return ProjectManagerFactory.Create(pmEntity);
+        return ProjectManagerFactory.Create(projectManagerEntity);
     }
 
     public async Task<ProjectManager> UpdateProjectManagerAsync(ProjectManagerUpdateForm form)
@@ -71,24 +81,25 @@ public class ProjectManagerService : IProjectManagerService
 
             if (existingEntity == null)
             {
+                Debug.WriteLine("Project manager not found");
                 return null!;
             }
 
+            await _projectManagerRepository.BeginTransactionAsync();
 
             var updatedEntity = ProjectManagerFactory.Create(form);
 
-            var result = await _projectManagerRepository.UpdateAsync(pm => pm.Email == form.Email, updatedEntity);
-            if (result == null)
-            {
-                return null!;
-            }
+           _projectManagerRepository.Update(updatedEntity);
 
+            await _projectManagerRepository.SaveAsync();
+            await _projectManagerRepository.CommitTransactionAsync();
 
-            return ProjectManagerFactory.Create(result);
+            return ProjectManagerFactory.Create(updatedEntity);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Ett fel uppstod vid uppdatering: {ex.Message}");
+            await _projectManagerRepository.RollbackTransactionAsync();
+            Debug.WriteLine($"Error: {ex.Message}");
             return null!;
         }
 
@@ -97,17 +108,27 @@ public class ProjectManagerService : IProjectManagerService
     {
         try
         {
-            var result = await _projectManagerRepository.DeleteAsync(p => p.Id == id);
+            var existingEntity = await _projectManagerRepository.GetAsync(pm => pm.Id == id);
 
-            if (!result)
+            if (existingEntity == null)
             {
-                Debug.WriteLine($"Could not delete projectmanager {id}.");
+                Debug.WriteLine($"Project manager not found");
                 return false;
             }
+
+            await _projectManagerRepository.BeginTransactionAsync(); 
+
+            _projectManagerRepository.Delete(existingEntity);
+
+
+            await _projectManagerRepository.SaveAsync();
+            await _projectManagerRepository.CommitTransactionAsync();
+
             return true;
         }
         catch (Exception ex)
         {
+            await _projectManagerRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
             return false!;
         }

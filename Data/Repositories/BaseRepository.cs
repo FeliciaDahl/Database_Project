@@ -2,6 +2,7 @@
 using Data.Contexts;
 using Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
@@ -11,23 +12,49 @@ public abstract class BaseRepository<TEntity>(DataContext context) : IBaseReposi
 {
     protected readonly DataContext _context = context;
     protected readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
+    private IDbContextTransaction _transaction = null!;
 
-    public virtual async Task<TEntity> CreateAsync(TEntity entity)
+    #region Transaction Management
+
+    public virtual async Task BeginTransactionAsync()
     {
-        if (entity == null)
-            return null!;
+        _transaction ??= await _context.Database.BeginTransactionAsync();
 
+    }
+
+    public virtual async Task CommitTransactionAsync()
+    {
+        if (_transaction != null)
+        {
+            await _transaction.CommitAsync();
+            await _transaction.DisposeAsync();
+            _transaction = null!;
+        }
+    }
+
+    public virtual async Task RollbackTransactionAsync()
+    {
+        if (_transaction != null)
+        {
+            await _transaction.RollbackAsync();
+            await _transaction.DisposeAsync();
+            _transaction = null!;
+        }
+
+    }
+
+    #endregion
+
+    public virtual void Add(TEntity entity)
+    {
         try
         {
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
-            return entity;
-
+             _dbSet.AddAsync(entity);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error occurred while creating {nameof(TEntity)} entity : {ex.Message}");
-            return null!;
+          
         }
     }
 
@@ -50,8 +77,6 @@ public abstract class BaseRepository<TEntity>(DataContext context) : IBaseReposi
             return null!;
 
         }
-        
-
     }
 
     public virtual async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IQueryable<TEntity>>? includeExpression = null)
@@ -77,52 +102,31 @@ public abstract class BaseRepository<TEntity>(DataContext context) : IBaseReposi
 
     }
 
-    public virtual async Task<TEntity> UpdateAsync(Expression<Func<TEntity, bool>> expression, TEntity updatedEntity)
+    public virtual void Update(TEntity entity)
     {
-        if (updatedEntity == null)
-            return null!;
-
         try
         {
-            var existingEntity = await _dbSet.FirstOrDefaultAsync(expression) ?? null!;
-
-            if (existingEntity == null)
-                return null!;
-
-
-            _context.Entry(existingEntity).CurrentValues.SetValues(updatedEntity);
-            await _context.SaveChangesAsync();
-            return existingEntity;
+            _dbSet.Update(entity);
 
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error occurred while updating {nameof(TEntity)} entity : {ex.Message}");
-            return null!;
+           
         }
     }
 
-    public virtual async Task<bool> DeleteAsync(Expression<Func<TEntity, bool>> expression)
+    public virtual void Delete(TEntity entity)
     {
-        if (expression == null)
-            return false;
-
         try
         {
-            var existingEntity = await _dbSet.FirstOrDefaultAsync(expression) ?? null!;
-
-            if (existingEntity == null)
-                return false;
-
-            _dbSet.Remove(existingEntity);
-            await _context.SaveChangesAsync();
-            return true;
+            _dbSet.Remove(entity);
 
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error occurred while deleting {nameof(TEntity)} entity : {ex.Message}");
-            return false;
+          
         }
 
     }
@@ -130,6 +134,11 @@ public abstract class BaseRepository<TEntity>(DataContext context) : IBaseReposi
     public virtual async Task<bool> AlreadyExistsAsync(Expression<Func<TEntity, bool>> expression)
     {
         return await _dbSet.AnyAsync(expression);
+    }
+
+    public virtual async Task<int> SaveAsync()
+    {
+        return await _context.SaveChangesAsync();
     }
 
 }

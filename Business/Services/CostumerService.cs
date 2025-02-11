@@ -21,29 +21,36 @@ public class CostumerService : ICostumerService
         _costumerRepository = costumerRepository;
     }
 
-    public async Task<CostumerEntity> GetOrCreateCostumerAsync(CostumerRegistrationForm form)
+    public async Task<Costumer> CreateCostumerAsync(CostumerRegistrationForm form)
     {
+      
         if (string.IsNullOrWhiteSpace(form.CostumerName))
             return null!;
 
-        var costumer = await _costumerRepository.GetAsync(c => c.CostumerName.ToLower() == form.CostumerName.Trim().ToLower());
+        await _costumerRepository.BeginTransactionAsync();
 
-        if (costumer == null)
+        var costumerEntity = await _costumerRepository.GetAsync(c => c.CostumerName.ToLower() == form.CostumerName.Trim().ToLower());
+
+        if (costumerEntity == null)
         {
             try
             {
-                costumer = CostumerFactory.Create(form);
-                return await _costumerRepository.CreateAsync(costumer);
+                costumerEntity = CostumerFactory.Create(form);
+               _costumerRepository.Add(costumerEntity);
+                await _costumerRepository.SaveAsync();
+
+                await _costumerRepository.CommitTransactionAsync();
 
             }
             catch (Exception ex)
             {
+                await _costumerRepository.RollbackTransactionAsync();
                 Debug.WriteLine($"Error: {ex.Message}");
                 return null!;
             }
 
         }
-        return costumer;
+            return CostumerFactory.Create(costumerEntity);
     }
 
     public async Task<IEnumerable<Costumer>> GetAllCostumersAsync()
@@ -73,48 +80,58 @@ public class CostumerService : ICostumerService
 
             if (existingEntity == null)
             {
+                Debug.WriteLine("Costumer not found");
                 return null!;
             }
 
+            await _costumerRepository.BeginTransactionAsync();
 
-            existingEntity.CostumerName = form.CostumerName;
+           existingEntity.CostumerName = form.CostumerName;
 
-            var result = await _costumerRepository.UpdateAsync(c => c.Id == form.Id, existingEntity);
+            _costumerRepository.Update(existingEntity);
 
-            if (result == null)
-            {
-                return null!;
-            }
+            await _costumerRepository.SaveAsync();
+            await _costumerRepository.CommitTransactionAsync();
 
+             var updatedCostumer = new Costumer
+                    {
+                        Id = existingEntity.Id,
+                        CostumerName = existingEntity.CostumerName
+                    };
 
-            return new Costumer
-            {
-                Id = result.Id,
-                CostumerName = result.CostumerName
-            };
+            return updatedCostumer;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Ett fel uppstod vid uppdatering: {ex.Message}");
+           await  _costumerRepository.RollbackTransactionAsync();
+            Debug.WriteLine($"Error: {ex.Message}");
             return null!;
         }
-
+       
     }
-
     public async Task<bool> DeleteCostumerAsync(int id)
     {
         try
         {
-            var result = await _costumerRepository.DeleteAsync(p => p.Id == id);
-            if (!result)
-            {
-                Debug.WriteLine($"Could not delete costumer {id}.");
+            var existingCostumer = await _costumerRepository.GetAsync(c => c.Id == id);
+
+            if (existingCostumer == null)
+            { 
+                Debug.WriteLine("Costumer not found");
                 return false;
             }
+
+            await _costumerRepository.BeginTransactionAsync();
+
+            _costumerRepository.Delete(existingCostumer);
+
+            await _costumerRepository.SaveAsync();
+            await _costumerRepository.CommitTransactionAsync(); 
             return true;
         }
         catch (Exception ex)
         {
+            await _costumerRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
             return false!;
         }

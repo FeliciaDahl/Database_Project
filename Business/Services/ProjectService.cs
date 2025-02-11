@@ -12,50 +12,47 @@ using System.Linq.Expressions;
 
 namespace Business.Services;
 
-public class ProjectService : IProjectService
+public class ProjectService(IProjectRepository projectRepository, ICostumerService costumerService, IProjectManagerService projectManagerService, IServiceRepository serviceRepository, IStatusTypeService statusTypeService) : IProjectService
 {
-    private readonly IProjectRepository _projectRepository;
-    private readonly ICostumerRepository _costumerRepository;
-    private readonly IProjectManagerRepository _projectManagerRepository;
-    private readonly IServiceRepository _serviceRepository;
-    private readonly IStatusTypeRepository _statusTypeRepository;
+    private readonly IProjectRepository _projectRepository = projectRepository;
+    private readonly ICostumerService _costumerService = costumerService;
+    private readonly IProjectManagerService _projectManagerService = projectManagerService;
+    private readonly IServiceRepository _serviceRepository = serviceRepository;
+    private readonly IStatusTypeService _statusTypeService = statusTypeService;
 
-    public ProjectService(IProjectRepository projectRepository, ICostumerRepository costumerRepository, IProjectManagerRepository projectManagerRepository, IServiceRepository serviceRepository, IStatusTypeRepository statusTypeRepository)
+    public async Task<Project> CreateProjectAsync(ProjectRegistrationForm form)
     {
-        _projectRepository = projectRepository;
-        _costumerRepository = costumerRepository;
-        _projectManagerRepository = projectManagerRepository;
-        _serviceRepository = serviceRepository;
-        _statusTypeRepository = statusTypeRepository;
-    }
 
-    public async Task<ProjectEntity> CreateProjectAsync(ProjectRegistrationForm form)
-    {
+        await _projectRepository.BeginTransactionAsync();
+
+
         try
         {
-            var costumer = await _costumerRepository.GetAsync(c => c.Id == form.CostumerId);
-            var pm = await _projectManagerRepository.GetAsync(pm => pm.Id == form.ProjectManagerId);
+            var costumer = await _costumerService.GetCostumerAsync(c => c.Id == form.CostumerId);
+            var pm = await _projectManagerService.GetProjectManagerAsync(pm => pm.Id == form.ProjectManagerId);
             var service = await _serviceRepository.GetAsync(s => s.Id == form.ServiceId);
-            var status = await _statusTypeRepository.GetAsync(s => s.Id == form.StatusTypeId);
+            var status = await _statusTypeService.GetStatusTypeByIdAsync(form.StatusTypeId);
 
             if (costumer == null || pm == null || service == null || status == null)
             {
-                Debug.WriteLine("Required value missing");
+                Debug.WriteLine("Required value is missing");
                 return null!;
             }
-
             var projectEntity = ProjectFactory.Create(form);
+           
+            _projectRepository.Add(projectEntity);
+            await _projectRepository.SaveAsync();
 
-            var createdProject = await _projectRepository.CreateAsync(projectEntity);
-            return createdProject;
+            await _projectRepository.CommitTransactionAsync();
 
+           return ProjectFactory.Create(projectEntity);
         }
 
         catch (Exception ex)
         {
+            await _projectRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
             return null!;
-
         }
 
     }
@@ -85,29 +82,33 @@ public class ProjectService : IProjectService
 
 
     public async Task<Project> UpdateProjectAsync(ProjectUpdateForm form)
-    {
+    { 
+       
         try
         {
             var existingProjectEntity = await _projectRepository.GetAsync(p => p.Title == form.Title);
 
             if (existingProjectEntity == null)
             {
+                Debug.WriteLine("Project not found");
                 return null!;
             }
+            await _projectRepository.BeginTransactionAsync();
 
             var updatedEntity = ProjectFactory.Create(form);
 
-            var result = await _projectRepository.UpdateAsync(p => p.Title == form.Title, updatedEntity);
-            if (result == null)
-            {
-                return null!;
-            }
+             _projectRepository.Update(updatedEntity);
 
-            return ProjectFactory.Create(result);
+            await _projectRepository.SaveAsync();
+            await _projectRepository.CommitTransactionAsync();
+            
+
+            return ProjectFactory.Create(updatedEntity);
 
         }
         catch (Exception ex)
         {
+            await _projectRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
             return null!;
         }
@@ -118,16 +119,26 @@ public class ProjectService : IProjectService
     {
         try
         {
-            var result = await _projectRepository.DeleteAsync(p => p.Id == id);
-            if (!result)
+           var existingProjectEntity =  await _projectRepository.GetAsync(p =>p.Id == id);
+
+            if (existingProjectEntity == null)
             {
-                Debug.WriteLine($"Could not delete project {id}.");
+                Debug.WriteLine("Project not found");
                 return false;
             }
+
+            await _projectRepository.BeginTransactionAsync();
+
+            _projectRepository.Delete(existingProjectEntity);
+
+            await _projectRepository.SaveAsync();
+            await _projectRepository.CommitTransactionAsync();
+
             return true;
         }
         catch (Exception ex)
         {
+            await _projectRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
             return false!;
         }

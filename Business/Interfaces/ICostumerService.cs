@@ -10,7 +10,7 @@ namespace Business.Interfaces
         Task<bool> DeleteCostumerAsync(int id);
         Task<IEnumerable<Costumer>> GetAllCostumersAsync();
         Task<Costumer?> GetCostumerAsync(Expression<Func<CostumerEntity, bool>> expression, Func<IQueryable<CostumerEntity>, IQueryable<CostumerEntity>>? includeExpression = null);
-        Task<CostumerEntity> GetOrCreateCostumerAsync(CostumerRegistrationForm form);
+        Task<Costumer> CreateCostumerAsync(CostumerRegistrationForm form);
         Task<Costumer> UpdateCostumerAsync(CostumerUpdateForm form);
     }
 }

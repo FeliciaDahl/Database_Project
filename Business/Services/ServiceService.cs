@@ -19,19 +19,26 @@ public class ServiceService : IServiceService
         _serviceRepository = serviceRepository;
     }
 
-    public async Task<ServiceEntity> CreateServiceAsync(ServiceRegistrationForm form)
+    public async Task<Service> CreateServiceAsync(ServiceRegistrationForm form)
     {
-        if (form == null)
+        await _serviceRepository.BeginTransactionAsync();
+
+        if (string.IsNullOrWhiteSpace(form.ServiceName)) 
             return null!;
 
         try
         {
-            var service = ServiceFactory.Create(form);
-            return await _serviceRepository.CreateAsync(service);
+            var serviceEntity = ServiceFactory.Create(form);
+            _serviceRepository.Add(serviceEntity);
+            await _serviceRepository.SaveAsync();
 
+            await _serviceRepository.CommitTransactionAsync();
+
+            return ServiceFactory.Create(serviceEntity);
         }
         catch (Exception ex)
         {
+            await _serviceRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
             return null!;
         }
@@ -45,23 +52,23 @@ public class ServiceService : IServiceService
 
             if (existingEntity == null)
             {
+                Debug.WriteLine("Service not found");
                 return null!;
-
             }
+            await _serviceRepository.BeginTransactionAsync();
 
             var updatedEntity = ServiceFactory.Create(form);
 
-            var result = await _serviceRepository.UpdateAsync(s => s.Id == form.Id, updatedEntity);
-            if (result == null)
-            {
-                return null!;
-            }
+            _serviceRepository.Update(updatedEntity);
 
+            await _serviceRepository.SaveAsync();
+            await _serviceRepository.CommitTransactionAsync();
 
-            return ServiceFactory.Create(result);
+            return ServiceFactory.Create(updatedEntity);
         }
         catch (Exception ex)
         {
+            await _serviceRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
             return null!;
         }
@@ -72,16 +79,24 @@ public class ServiceService : IServiceService
     {
         try
         {
-            var result = await _serviceRepository.DeleteAsync(s => s.Id == id);
-            if (!result)
+            var existingEntity = await _serviceRepository.GetAsync(s => s.Id == s.Id);
+
+            if (existingEntity == null)
             {
-                Debug.WriteLine($"Could not delete service {id}.");
-                return false;
+                Debug.WriteLine("Service not found");
+                return false!;
             }
+            await _serviceRepository.BeginTransactionAsync();
+
+            _serviceRepository.Update(existingEntity);
+
+            await _serviceRepository.SaveAsync();
+            await _serviceRepository.CommitTransactionAsync();
             return true;
         }
         catch (Exception ex)
         {
+            await _serviceRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
             return false!;
         }

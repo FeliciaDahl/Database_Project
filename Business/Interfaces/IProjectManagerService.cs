@@ -9,7 +9,7 @@ namespace Business.Interfaces
     {
         Task<bool> DeleteProjectManagerAsync(int id);
         Task<IEnumerable<ProjectManager>> GetAllProjectManagersAsync();
-        Task<ProjectManagerEntity> GetOrCreateProjectManagerAsync(ProjectManagerRegistrationForm form);
+        Task<ProjectManager> CreateProjectManagerAsync(ProjectManagerRegistrationForm form);
         Task<ProjectManager?> GetProjectManagerAsync(Expression<Func<ProjectManagerEntity, bool>> expression, Func<IQueryable<ProjectManagerEntity>, IQueryable<ProjectManagerEntity>>? includeExpression = null);
         Task<ProjectManager> UpdateProjectManagerAsync(ProjectManagerUpdateForm form);
     }
