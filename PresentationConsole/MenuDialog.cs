@@ -41,7 +41,7 @@ public class MenuDialog : IMenuDialog
         
         var costumerForm = new CostumerRegistrationForm { CostumerName = costumerName };
 
-        var costumer = await _costumerService.GetOrCreateCostumerAsync(costumerForm);
+        var costumer = await _costumerService.CreateCostumerAsync(costumerForm);
 
         
         Console.WriteLine("Ange ProjectManager e-post:");
@@ -62,7 +62,7 @@ public class MenuDialog : IMenuDialog
         };
 
 
-        var projectManager = await _projectManagerService.GetOrCreateProjectManagerAsync(PMform);
+        var projectManager = await _projectManagerService.CreateProjectManagerAsync(PMform);
 
         Console.WriteLine("Lägg till service.");
         Console.WriteLine("Service Namn:");
