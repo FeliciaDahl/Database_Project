@@ -44,6 +44,8 @@ public static class ProjectFactory
             ProjectManagerLastName = entity.ProjectManager.LastName, 
             ProjectManagerEmail = entity.ProjectManager.Email,
             ServiceName = entity.Service.ServiceName,
+            ServiceDescription = entity.Service.ServiceDescription!,
+            ServicePrice = entity.Service.Price,
             StatusTypeName = entity.StatusType.StatusName
         };
     }

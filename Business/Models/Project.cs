@@ -26,6 +26,8 @@ public class Project
     public string ProjectManagerEmail { get; set; } = null!;
     public string? ProjectManagerPhone { get; set; }
     public string ServiceName { get; set; } = null!;
+    public string ServiceDescription { get; set; } = null!;
+    public decimal ServicePrice { get; set; }
     public string StatusTypeName { get; set; } = null!;
 
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation_WebApi.Controllers;
 
-[Route("api/projectManager")]
+[Route("api/projectmanagers")]
 [ApiController]
 public class ProjectManagerController(IProjectManagerService projectManagerService) : ControllerBase
 {
