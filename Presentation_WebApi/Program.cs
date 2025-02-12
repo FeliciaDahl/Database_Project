@@ -4,14 +4,15 @@ using Data.Contexts;
 using Data.Interfaces;
 using Data.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+});
 
 builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Projects\\Database_Project\\Data\\Data\\project_database.mdf;Integrated Security=True;Connect Timeout=30"));
 builder.Services.AddScoped<IProjectService, ProjectService>();
@@ -28,7 +29,8 @@ builder.Services.AddScoped<IStatusTypeRepository, StatusTypeRepository>();
 
 
 var app = builder.Build();
-app.MapOpenApi();
+app.UseSwagger();
+app.UseSwaggerUI(); ;
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
