@@ -5,7 +5,8 @@ namespace Business.Dto;
 
 public class ProjectUpdateForm
 {
-    
+    public int Id { get; set; }
+
     [Required]
     public string Title { get; set; } = null!;
 

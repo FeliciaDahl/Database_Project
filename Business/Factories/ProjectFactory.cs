@@ -35,7 +35,7 @@ public static class ProjectFactory
             Description = entity.Description,
             StartDate = entity.StartDate,
             EndDate = entity.EndDate,
-            CostumerId = entity.CostumerId,
+            CostumerId = entity.CostumerId, 
             ProjectManagerId = entity.ProjectManagerId,
             ServiceId = entity.ServiceId,
             StatusTypeId = entity.StatusTypeId,
@@ -53,7 +53,7 @@ public static class ProjectFactory
     {
         return new ProjectUpdateForm
         {
-            
+            Id = project.Id,
             Title = project.Title,
             Description = project.Description,
             StartDate = project.StartDate,
@@ -68,6 +68,7 @@ public static class ProjectFactory
     {
         return new ProjectEntity
         {
+            Id = form.Id,
             Title = form.Title,
             Description = form.Description,
             StartDate = form.StartDate,

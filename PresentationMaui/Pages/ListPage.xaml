@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             
+             xmlns:viewmodels="clr-namespace:PresentationMaui.ViewModels"
+             xmlns:models="clr-namespace:Business.Models;assembly=Business"
+             x:DataType="{x:Type viewmodels:ListViewModel}"
+             
+             x:Class="PresentationMaui.Pages.ListPage"
+             
+             Title="ListPage">
+
+    <Grid RowDefinitions="auto, *" Margin="20">
+
+        <Button Grid.Row="0" Text="Add new project" Command="{Binding NavigateToAddCommand} " Margin="0,0,0,20"/>
+        
+        
+        <ListView x:Name="StatusMessage" Grid.Row="1" >
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:Project">
+                    <StackLayout Padding="5">
+
+                        <Label Text="{Binding Id }" FontSize="18"/>
+                        <Label Text="{Binding Title }" FontSize="14" TextColor="Gray"/>
+                    </StackLayout>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+
+
+
+</ContentPage>

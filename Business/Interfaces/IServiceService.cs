@@ -8,6 +8,6 @@ namespace Business.Interfaces
     {
         Task<Service> CreateServiceAsync(ServiceRegistrationForm form);
         Task<bool> DeleteServiceAsync(int id);
-        Task<Service> UpdateServiceAsync(ServiceUpdateForm form);
+        Task<Service> UpdateServiceAsync(int id, ServiceUpdateForm form);
     }
 }

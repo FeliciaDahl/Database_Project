@@ -11,6 +11,6 @@ namespace Business.Interfaces
         Task<IEnumerable<Costumer>> GetAllCostumersAsync();
         Task<Costumer?> GetCostumerAsync(Expression<Func<CostumerEntity, bool>> expression, Func<IQueryable<CostumerEntity>, IQueryable<CostumerEntity>>? includeExpression = null);
         Task<Costumer> CreateCostumerAsync(CostumerRegistrationForm form);
-        Task<Costumer> UpdateCostumerAsync(CostumerUpdateForm form);
+        Task<Costumer> UpdateCostumerAsync(int id, CostumerUpdateForm form);
     }
 }

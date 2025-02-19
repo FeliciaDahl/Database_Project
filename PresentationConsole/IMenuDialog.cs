@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Business.Models;
+using System.Threading.Tasks;
 
 namespace PresentationConsole
 {
@@ -6,5 +7,8 @@ namespace PresentationConsole
     {
         Task ShowProjects();
         Task CreateProjectAsync();
+        Task MainMenu();
+        Task UpdateProject();
+        Task<Project?> ShowAndSelectProject();
     }
 }

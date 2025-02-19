@@ -44,7 +44,7 @@ public class ServiceService : IServiceService
         }
     }
 
-    public async Task<Service> UpdateServiceAsync(ServiceUpdateForm form)
+    public async Task<Service> UpdateServiceAsync(int id, ServiceUpdateForm form)
     {
         try
         {
@@ -55,16 +55,27 @@ public class ServiceService : IServiceService
                 Debug.WriteLine("Service not found");
                 return null!;
             }
+
             await _serviceRepository.BeginTransactionAsync();
 
-            var updatedEntity = ServiceFactory.Create(form);
+            existingEntity.ServiceName = string.IsNullOrWhiteSpace(form.ServiceName) ? existingEntity.ServiceName : form.ServiceName;
+            existingEntity.ServiceDescription = string.IsNullOrWhiteSpace(form.ServiceDescription) ? existingEntity.ServiceDescription : form.ServiceDescription;
+            existingEntity.Price = form.Price != default ? form.Price : existingEntity.Price;
 
-            _serviceRepository.Update(updatedEntity);
+            _serviceRepository.Update(existingEntity);
 
             await _serviceRepository.SaveAsync();
             await _serviceRepository.CommitTransactionAsync();
 
-            return ServiceFactory.Create(updatedEntity);
+            var updatedService = new Service
+            {
+                Id = existingEntity.Id,
+                ServiceName = existingEntity.ServiceName,
+                ServiceDescription = existingEntity.ServiceDescription,
+                Price = existingEntity.Price
+            };
+
+            return updatedService;
         }
         catch (Exception ex)
         {

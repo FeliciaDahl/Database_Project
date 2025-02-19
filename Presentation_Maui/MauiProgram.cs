@@ -2,9 +2,9 @@
 using Business.Services;
 using Data.Interfaces;
 using Data.Repositories;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Presentation_Maui.Services;
+using Presentation_Maui.ViewModels;
 
 namespace Presentation_Maui
 {
@@ -23,6 +23,13 @@ namespace Presentation_Maui
 
             builder.Services.AddSingleton<HttpClient>(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7123/") });
             builder.Services.AddSingleton<ProjectApiService>();
+            builder.Services.AddSingleton<CostumerApiService>();
+            builder.Services.AddSingleton<ProjectManagerApiService>();
+            builder.Services.AddSingleton<ServiceApiService>();
+            builder.Services.AddSingleton<StatusTypeApiService>();
+
+            builder.Services.AddSingleton<MainViewModel>();
+            builder.Services.AddSingleton<MainPage>();
 
             builder.Services.AddScoped<IProjectService, ProjectService>();
             builder.Services.AddScoped<ICostumerService, CostumerService>();

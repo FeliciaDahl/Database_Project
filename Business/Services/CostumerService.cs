@@ -72,11 +72,11 @@ public class CostumerService : ICostumerService
         return CostumerFactory.Create(costumerEntity);
     }
 
-    public async Task<Costumer> UpdateCostumerAsync(CostumerUpdateForm form)
+    public async Task<Costumer> UpdateCostumerAsync(int id, CostumerUpdateForm form)
     {
         try
         {
-            var existingEntity = await _costumerRepository.GetAsync(c => c.Id == form.Id);
+            var existingEntity = await _costumerRepository.GetAsync(x => x.Id == id);
 
             if (existingEntity == null)
             {
@@ -86,7 +86,7 @@ public class CostumerService : ICostumerService
 
             await _costumerRepository.BeginTransactionAsync();
 
-           existingEntity.CostumerName = form.CostumerName;
+           existingEntity.CostumerName = string.IsNullOrWhiteSpace(form.CostumerName) ? existingEntity.CostumerName : form.CostumerName;
 
             _costumerRepository.Update(existingEntity);
 

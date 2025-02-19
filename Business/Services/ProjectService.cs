@@ -20,11 +20,10 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
     private readonly IServiceRepository _serviceRepository = serviceRepository;
     private readonly IStatusTypeService _statusTypeService = statusTypeService;
 
-    public async Task<Project> CreateProjectAsync(ProjectRegistrationForm form)
+    public async Task<bool> CreateProjectAsync(ProjectRegistrationForm form)
     {
 
         await _projectRepository.BeginTransactionAsync();
-
 
         try
         {
@@ -36,23 +35,22 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
             if (costumer == null || pm == null || service == null || status == null)
             {
                 Debug.WriteLine("Required value is missing");
-                return null!;
+                return false;
             }
             var projectEntity = ProjectFactory.Create(form);
-           
+
             _projectRepository.Add(projectEntity);
             await _projectRepository.SaveAsync();
 
             await _projectRepository.CommitTransactionAsync();
-
-           return ProjectFactory.Create(projectEntity);
+                return true; 
         }
 
         catch (Exception ex)
         {
             await _projectRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
-            return null!;
+            return false;
         }
 
     }
@@ -81,36 +79,36 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
     }
 
 
-    public async Task<Project> UpdateProjectAsync(ProjectUpdateForm form)
+    public async Task<bool> UpdateProjectAsync(int id, ProjectUpdateForm form)
     { 
        
         try
         {
-            var existingProjectEntity = await _projectRepository.GetAsync(p => p.Title == form.Title);
+            var existingEntity = await _projectRepository.GetAsync(x => x.Id == id);
 
-            if (existingProjectEntity == null)
+            if (existingEntity == null)
             {
                 Debug.WriteLine("Project not found");
-                return null!;
+                return false;
             }
             await _projectRepository.BeginTransactionAsync();
 
-            var updatedEntity = ProjectFactory.Create(form);
-
-             _projectRepository.Update(updatedEntity);
+            existingEntity.Title = string.IsNullOrWhiteSpace(form.Title) ? existingEntity.Title : form.Title;
+            existingEntity.Description = string.IsNullOrWhiteSpace(form.Description) ? existingEntity.Description : form.Description;
+            
+            _projectRepository.Update(existingEntity);
 
             await _projectRepository.SaveAsync();
             await _projectRepository.CommitTransactionAsync();
             
-
-            return ProjectFactory.Create(updatedEntity);
+            return true;
 
         }
         catch (Exception ex)
         {
             await _projectRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
-            return null!;
+            return false;
         }
 
     }
@@ -144,4 +142,22 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
         }
 
     }
+
+    //public async Task<IEnumerable<Project>> SearchProjectsAsync(string category, string query)
+    //{
+    //    var projectEntites = await _projectRepository.GetAllAsync();
+
+    //    var projects = projectEntites.Select(p => ProjectFactory.Create(projectEntites)).ToList();
+
+    //    return category.ToLower() switch
+    //    {
+    //        "id" => projects.Where(p => p.Id.ToString().Contains(query)).ToList(),
+    //        "title" => projects.Where(p => p.Title.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(),
+    //        "projectmanager" => projects.Where(p => p.ProjectManager.FirstName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(),
+    //        "costumer" => projects.Where(p => p.Costumer.CostumerName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(),
+    //        _ => new List<Project>() // Om en okänd kategori används, returnera tom lista
+    //    };
+    //}
+
+
 }

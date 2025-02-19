@@ -73,11 +73,11 @@ public class ProjectManagerService : IProjectManagerService
         return ProjectManagerFactory.Create(projectManagerEntity);
     }
 
-    public async Task<ProjectManager> UpdateProjectManagerAsync(ProjectManagerUpdateForm form)
+    public async Task<ProjectManager> UpdateProjectManagerAsync(int id, ProjectManagerUpdateForm form)
     {
         try
         {
-            var existingEntity = await _projectManagerRepository.GetAsync(pm => pm.Email == form.Email);
+            var existingEntity = await _projectManagerRepository.GetAsync(x => x.Id == id);
 
             if (existingEntity == null)
             {
@@ -87,14 +87,26 @@ public class ProjectManagerService : IProjectManagerService
 
             await _projectManagerRepository.BeginTransactionAsync();
 
-            var updatedEntity = ProjectManagerFactory.Create(form);
+            existingEntity.FirstName = string.IsNullOrWhiteSpace(form.FirstName) ? existingEntity.FirstName : form.FirstName;
+            existingEntity.LastName = string.IsNullOrWhiteSpace(form.LastName) ? existingEntity.LastName : form.LastName;
+            existingEntity.Email = string.IsNullOrWhiteSpace(form.Email) ? existingEntity.Email : form.Email.ToLower();
+            existingEntity.Phone = string.IsNullOrWhiteSpace(form.Phone) ? existingEntity.Phone : form.Phone;
 
-           _projectManagerRepository.Update(updatedEntity);
+            _projectManagerRepository.Update(existingEntity);
 
             await _projectManagerRepository.SaveAsync();
             await _projectManagerRepository.CommitTransactionAsync();
 
-            return ProjectManagerFactory.Create(updatedEntity);
+            var updatedPM = new ProjectManager
+            {
+                Id = existingEntity.Id,
+                FirstName = existingEntity.FirstName,
+                LastName = existingEntity.LastName,
+                Email = existingEntity.Email,
+                Phone = existingEntity.Phone
+            };
+
+            return updatedPM;
         }
         catch (Exception ex)
         {

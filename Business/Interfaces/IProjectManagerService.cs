@@ -11,6 +11,6 @@ namespace Business.Interfaces
         Task<IEnumerable<ProjectManager>> GetAllProjectManagersAsync();
         Task<ProjectManager> CreateProjectManagerAsync(ProjectManagerRegistrationForm form);
         Task<ProjectManager?> GetProjectManagerAsync(Expression<Func<ProjectManagerEntity, bool>> expression, Func<IQueryable<ProjectManagerEntity>, IQueryable<ProjectManagerEntity>>? includeExpression = null);
-        Task<ProjectManager> UpdateProjectManagerAsync(ProjectManagerUpdateForm form);
+        Task<ProjectManager> UpdateProjectManagerAsync(int id, ProjectManagerUpdateForm form);
     }
 }
