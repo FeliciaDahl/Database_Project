@@ -74,12 +74,11 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
             return null!;
         }
 
-
         return ProjectFactory.Create(projectEntity);
     }
 
 
-    public async Task<bool> UpdateProjectAsync(int id, ProjectUpdateForm form)
+    public async Task<Project> UpdateProjectAsync(int id, ProjectUpdateForm form)
     { 
        
         try
@@ -89,26 +88,32 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
             if (existingEntity == null)
             {
                 Debug.WriteLine("Project not found");
-                return false;
+                return null!;
             }
             await _projectRepository.BeginTransactionAsync();
 
             existingEntity.Title = string.IsNullOrWhiteSpace(form.Title) ? existingEntity.Title : form.Title;
             existingEntity.Description = string.IsNullOrWhiteSpace(form.Description) ? existingEntity.Description : form.Description;
-            
+            existingEntity.CostumerId = form.CostumerId > 0 ? form.CostumerId : existingEntity.CostumerId;
+            existingEntity.ProjectManagerId = form.ProjectManagerId > 0 ? form.ProjectManagerId : existingEntity.ProjectManagerId;
+            existingEntity.ServiceId = form.ServiceId > 0 ? form.ServiceId : existingEntity.ServiceId;
+            existingEntity.StatusTypeId = form.StatusTypeId > 0 ? form.StatusTypeId : existingEntity.StatusTypeId;
+
             _projectRepository.Update(existingEntity);
 
             await _projectRepository.SaveAsync();
             await _projectRepository.CommitTransactionAsync();
-            
-            return true;
+
+            var updatedProject = ProjectFactory.Create(existingEntity);
+       
+            return updatedProject;
 
         }
         catch (Exception ex)
         {
             await _projectRepository.RollbackTransactionAsync();
             Debug.WriteLine($"Error: {ex.Message}");
-            return false;
+            return null!;
         }
 
     }

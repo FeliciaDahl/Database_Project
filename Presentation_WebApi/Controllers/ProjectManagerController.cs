@@ -46,12 +46,12 @@ public class ProjectManagerController(IProjectManagerService projectManagerServi
     }
 
     [HttpPut]
-    public async Task<ActionResult<ProjectManager>> UpdateProjectManager([FromBody] ProjectManagerUpdateForm form)
+    public async Task<ActionResult<ProjectManager>> UpdateProjectManager(int id, [FromBody] ProjectManagerUpdateForm form)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var updatedProjectManager = await _projectManagerService.UpdateProjectManagerAsync(form);
+        var updatedProjectManager = await _projectManagerService.UpdateProjectManagerAsync(id, form);
         if (updatedProjectManager == null)
             return NotFound("ProjectManager not found.");
 

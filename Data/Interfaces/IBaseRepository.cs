@@ -9,7 +9,6 @@ namespace Data.Interfaces
         Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IQueryable<TEntity>>? includeExpression = null);
         void Update(TEntity entity);
         void Delete(TEntity entity);
-        Task<bool> AlreadyExistsAsync(Expression<Func<TEntity, bool>> expression);
         Task<int> SaveAsync();
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

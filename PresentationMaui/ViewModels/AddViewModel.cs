@@ -11,6 +11,6 @@ public partial class AddViewModel : ObservableObject
     [RelayCommand]
     private async Task NavigateToList()
     {
-        await Shell.Current.GoToAsync("ListPage");
+        await Shell.Current.GoToAsync("///ListPage");
     }
 }

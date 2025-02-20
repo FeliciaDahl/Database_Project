@@ -19,7 +19,7 @@ public class StatusTypeApiService
 
     public async Task<StatusType?> GetStatusTypeByIdAsync(int id)
     {
-        return await _httpClient.GetFromJsonAsync<StatusType>($"https://your-api-url.com/api/status/{id}");
+        return await _httpClient.GetFromJsonAsync<StatusType>($"https://localhost:7123/api/status{id}");
     }
 
 }

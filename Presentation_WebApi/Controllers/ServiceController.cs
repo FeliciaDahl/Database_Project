@@ -21,7 +21,6 @@ public class ServiceController(IServiceService serviceService) : ControllerBase
         {
             var service = await _serviceService.CreateServiceAsync(form);
             if (service != null)
-
                 return Ok(service);
         }
 
@@ -30,12 +29,12 @@ public class ServiceController(IServiceService serviceService) : ControllerBase
 
 
     [HttpPut]
-    public async Task<ActionResult<ProjectManager>> UpdateService([FromBody] ServiceUpdateForm form)
+    public async Task<ActionResult<ProjectManager>> UpdateService(int id, [FromBody] ServiceUpdateForm form)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var updatedService = await _serviceService.UpdateServiceAsync(form);
+        var updatedService = await _serviceService.UpdateServiceAsync(id, form);
         if (updatedService == null)
             return NotFound("Service not found.");
 

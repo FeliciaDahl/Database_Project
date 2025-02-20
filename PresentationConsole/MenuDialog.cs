@@ -2,7 +2,6 @@
 using Business.Dto;
 using Business.Interfaces;
 using Business.Models;
-using System.ComponentModel.Design;
 
 namespace PresentationConsole;
 
@@ -59,11 +58,12 @@ public class MenuDialog : IMenuDialog
                 case "6":
                     await DeleteProject();
                     break;
-                //case "5":
-                //    await
-                //    break;
-                //default:
-                //    break;
+                case "7":
+                    QuitOption();
+                    break;
+                default:
+                    OutputDialog("Please enter a valid key");
+                    break;
 
             }
         }
@@ -80,41 +80,163 @@ public class MenuDialog : IMenuDialog
         string? description = Console.ReadLine();
 
         Console.WriteLine("StartDate (yyyy-MM-dd):");
+
         DateTime startDate = DateTime.Parse(Console.ReadLine() ?? "");
 
         Console.WriteLine("EndDate (yyyy-MM-dd):");
         DateTime endDate = DateTime.Parse(Console.ReadLine() ?? "");
 
         Console.Clear();
-        Console.WriteLine("---Costumer Information---");
-        Console.WriteLine("Costumer Name:");
-        string costumerName = Console.ReadLine() ?? "";
-        
-        var costumerForm = new CostumerRegistrationForm { CostumerName = costumerName };
+        Console.WriteLine("--- Costumer ---");
+        Console.Write("Do you want to select an existing Costumer? (y/n): ");
+        string optionC = Console.ReadLine()?.ToLower() ?? "n";
 
-        var costumer = await _costumerService.CreateCostumerAsync(costumerForm);
-        Console.Clear();
-        Console.WriteLine("---ProjectManager Information---");
-        Console.WriteLine("First Name:");
-        string firstName = Console.ReadLine() ?? "";
-        Console.WriteLine("Last Name:");
-        string lastName = Console.ReadLine() ?? "";
-        Console.WriteLine("Email:");
-        string email = Console.ReadLine() ?? "";
-       
-        Console.WriteLine("Phone:");
-        string? phone = Console.ReadLine();
-
-        var PMform = new ProjectManagerRegistrationForm
+        Costumer? costumer = null;
+        if (optionC.Equals("y", StringComparison.CurrentCultureIgnoreCase))
         {
-            Email = email,
-            FirstName = firstName,
-            LastName = lastName,
-            Phone = phone
-        };
+            var costumers = await _costumerService.GetAllCostumersAsync();
 
-        var projectManager = await _projectManagerService.CreateProjectManagerAsync(PMform);
+            if (!costumers.Any())
+            {
+                Console.WriteLine("No costumers found. Create a new costumer.");
+                return;
+            }
+           
+                while (costumer == null) 
+                {
+                    foreach (var c in costumers)
+                    {
+                        Console.WriteLine($"{c.Id}: {c.CostumerName}");
+                    }
 
+                    Console.Write("Enter Costumer ID: ");
+                    string input = Console.ReadLine()?.Trim() ?? "";
+
+                    if (!int.TryParse(input, out int costumerId))
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Invalid input.");
+                        continue; 
+                    }
+
+                    costumer = costumers.FirstOrDefault(c => c.Id == costumerId);
+                    if (costumer == null)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("No costumer found with that ID. Please try again.");
+                    }
+                }
+            
+        }
+        else
+        {
+            while(true)
+            {
+                Console.Clear();
+                Console.WriteLine("---Costumer Information---");
+                Console.WriteLine("Costumer Name:");
+                string costumerName = Console.ReadLine() ?? "";
+
+                var costumerForm = new CostumerRegistrationForm { CostumerName = costumerName };
+
+                var newCostumer = await _costumerService.CreateCostumerAsync(costumerForm);
+
+
+                if (newCostumer != null)
+                {
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Something went wrong with creating the costumer. Try again.");
+                    Console.ReadKey();
+                }
+
+            }
+            
+        }
+
+        Console.Clear();
+        Console.WriteLine("--- ProjectManager ---");
+        Console.Write("Do you want to select an existing ProjectManager? (y/n): ");
+      
+        string optionPM = Console.ReadLine()?.ToLower() ?? "n";
+
+        ProjectManager? projectManager = null;
+
+        if (optionPM.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+        {
+            var projectManagers = await _projectManagerService.GetAllProjectManagersAsync();
+
+            if (!projectManagers.Any())
+            {
+                Console.WriteLine("No project managers found. Create a new.");
+                return;
+            }
+           
+                while (projectManager == null)
+                {
+                    foreach (var pm in projectManagers)
+                    {
+                        Console.WriteLine($"{pm.Id}: {pm.FirstName} {pm.LastName} ({pm.Email})");
+                    }
+
+                    Console.Write("Enter ProjectManager ID: ");
+                    string input = Console.ReadLine()?.Trim() ?? "";
+
+                    if (!int.TryParse(input, out int pmId))
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Invalid input.");
+                        continue;
+                    }
+
+                    projectManager = projectManagers.FirstOrDefault(pm => pm.Id == pmId);
+                    if (projectManager == null)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("No project manager found with that ID. Please try again.");
+                    }
+                }
+        }
+        else
+        {
+            while(true)
+            {
+                Console.Clear();
+                Console.WriteLine("--- ProjectManager Information ---");
+                Console.Write("First Name: ");
+                string firstName = Console.ReadLine() ?? "";
+                Console.Write("Last Name: ");
+                string lastName = Console.ReadLine() ?? "";
+                Console.Write("Email: ");
+                string email = Console.ReadLine() ?? "";
+                Console.Write("Phone: ");
+                string? phone = Console.ReadLine();
+
+                var PMform = new ProjectManagerRegistrationForm
+                {
+                    Email = email,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Phone = phone
+                };
+
+                
+                projectManager = await _projectManagerService.CreateProjectManagerAsync(PMform);
+
+                if (projectManager != null)
+                {
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Something went wrong with creating the Project Manager. Try again.");
+                    Console.ReadKey();
+                }
+            }      
+        }
+   
         Console.Clear();
         Console.WriteLine("---Service Information---");
         Console.WriteLine("Service Name:");
@@ -144,11 +266,6 @@ public class MenuDialog : IMenuDialog
         int statusTypeId = int.Parse(Console.ReadLine() ?? "");
 
 
-        Console.WriteLine($"Costumer ID: {costumer?.Id}");
-        Console.WriteLine($"ProjectManager ID: {projectManager?.Id}");
-        Console.WriteLine($"Service ID: {services?.Id}");
-        Console.WriteLine($"StatusType ID: {statusTypeId}");
-
         if (costumer == null || projectManager == null || services == null)
         {
             Console.WriteLine("Required fields are missing, try again.");
@@ -165,54 +282,74 @@ public class MenuDialog : IMenuDialog
             ProjectManagerId = projectManager.Id,
             ServiceId = services.Id,
             StatusTypeId = statusTypeId,
-        
         };
 
     var result = await _projectService.CreateProjectAsync(projectForm);
 
         if (result)
         {
-            Console.WriteLine("Project Created!");
+            OutputDialog("Project Created!");
         }
         else
         {
-            Console.WriteLine("Something went wrong, try again");
+            OutputDialog("Something went wrong, try again"); 
         }
+        Console.ReadKey();
     }
 
 
     public async Task ShowProjects()
     {
         Console.Clear();
-        Console.WriteLine("---Projects---");
-        var result = await _projectService.GetAllProjectsAsync();
+        Console.WriteLine("Enter an ID to see details");
+        Console.WriteLine();
 
-        if (result != null)
-
-            foreach (var project in result)
-            {
-                Console.WriteLine($"Project ID: {project.Id}\n" +
+        var project = await ShowAndSelectProject();
+        
+        if (project != null)
+        {
+            Console.Clear();
+            Console.WriteLine
+                 ($"---Project Information---\n\n" +
+                  $"Project ID: {project.Id}\n" +
                   $"Project Title: {project.Title}\n" +
-                  $"Costumer: {project.CostumerName}\n" +
+                  $"Description: {project.Description}\n\n" +
+
+                  $"---Costumer---\n" +
+                  $"Costumer: {project.CostumerName}\n\n" +
+                 
+                  $"---ProjectManager---\n" +
                   $"Project Manager: {project.ProjectManagerFirstName} {project.ProjectManagerLastName}\n" +
+                  $"Email: {project.ProjectManagerEmail}\n" +
+                  $"Phone: {project.ProjectManagerPhone}\n\n" +
+
+                  $"---Service---\n" +
                   $"Service: {project.ServiceName}\n" +
+                  $"Service description: {project.ServiceDescription}\n" +
+                  $"Service Price: {project.ServicePrice}\n\n" +
+
+                  $"---Status---\n" +
                   $"Project Status: {project.StatusTypeName}");
-                Console.WriteLine();
-            }
+
+                
+        }
+
         Console.ReadKey();
     }
 
     public async Task ShowCostumers()
     {
         Console.Clear();
-        Console.WriteLine("---Costumers---");
+        Console.WriteLine("---Costumers---\n");
         var result = await _costumerService.GetAllCostumersAsync();
 
         if(result != null)
 
             foreach(var costumer in result)
-            {
-                Console.WriteLine($"CostumerName : {costumer.CostumerName}");
+            {    
+                Console.WriteLine($"Costumer ID : {costumer.Id}");
+                Console.WriteLine($"Costumer Name : {costumer.CostumerName}\n");
+                Console.WriteLine();
             }
         Console.ReadKey();
     }
@@ -220,16 +357,18 @@ public class MenuDialog : IMenuDialog
     public async Task ShowProjectManagers()
     {
         Console.Clear();
-        Console.WriteLine("---Project Managers---");
+        Console.WriteLine("---Project Managers---\n");
         var result = await _projectManagerService.GetAllProjectManagersAsync();
 
         if (result != null)
             foreach (var PM in result)
             {
-                Console.WriteLine($"ProjectManager Name : {PM.FirstName} {PM.LastName}\n" +
+                Console.WriteLine(
+                    $"ProjectManager ID: {PM.Id}\n" +
+                    $"ProjectManager Name : {PM.FirstName} {PM.LastName}\n" +
                     $"Email: {PM.Email}\n" + 
                     $"Phone: {PM.Phone}\n");
-                Console.WriteLine();
+               
             }
         Console.ReadKey();
     }
@@ -244,8 +383,7 @@ public class MenuDialog : IMenuDialog
 
         if(existingProject == null)
         {
-            Console.WriteLine("No project found");
-            Console.ReadKey();
+            OutputDialog("No project found");
             return;
         }
 
@@ -370,26 +508,30 @@ public class MenuDialog : IMenuDialog
         var updateForm = new ProjectUpdateForm
         {
             Id = existingProject.Id,
-            Title = existingProject.Title,
-            Description = existingProject.Description,
-            StartDate = existingProject.StartDate,
-            EndDate = existingProject.EndDate,
+            Title = title,
+            Description = description,
+            StartDate = startDate,
+            EndDate = endDate,
             CostumerId = existingProject.CostumerId,
             ProjectManagerId = existingProject.ProjectManagerId,
             ServiceId = existingProject.ServiceId,
             StatusTypeId = existingProject.StatusTypeId
         };
 
-        var result = await _projectService.UpdateProjectAsync(existingProject.Id, updateForm);
+        var project = await _projectService.UpdateProjectAsync(existingProject.Id, updateForm);
 
-        if (result)
+        existingProject.Id = project?.Id ?? existingProject.Id;
+
+        if (project != null)
         {
-            Console.WriteLine("Project updated successfully!");
+            OutputDialog("Project updated successfully!");  
         }
         else
         {
-            Console.WriteLine("Something went wrong, try again.");
+            OutputDialog("Something went wrong, try again.");
         }
+
+        Console.ReadKey();
     }
 
     public async Task<bool> DeleteProject()
@@ -401,8 +543,7 @@ public class MenuDialog : IMenuDialog
 
         if (existingProject == null)
         {
-            Console.WriteLine("No project found");
-            Console.ReadKey();
+            OutputDialog("No project found");
             return false;
         }
 
@@ -415,30 +556,22 @@ public class MenuDialog : IMenuDialog
 
             if (result)
             {
-                Console.WriteLine("Project was deleted successfully");
-                Console.ReadKey();
+                OutputDialog("Project was deleted successfully!");
                 return true;
             }
             else
             {
-                Console.WriteLine("Project was not deleted");
-                Console.ReadKey();
+                OutputDialog("Project was not deleted");
                 return false;
             }
-
         }
         else
         {
-            Console.WriteLine("Press any key to go back to menu");
-            Console.ReadKey();
+            OutputDialog("Press any key to go back to menu");
             return false;
         }
-        
-  
+     
     }
-
-
-    
 
     public async Task<Project?> ShowAndSelectProject()
     {
@@ -455,22 +588,41 @@ public class MenuDialog : IMenuDialog
         {
             Console.WriteLine($"Project ID: {project.Id}, Project Title: {project.Title}, Costumer: {project.CostumerName}");
         }
-        Console.WriteLine("Enter the ID of project you want to handle");
+
+        Console.Write("Enter Project-ID: ");
         if (!int.TryParse(Console.ReadLine(), out var projectId))
         {
-            Console.WriteLine("Invalid Id, try again");
-            Console.ReadKey();
+            OutputDialog("Invalid Id");
             return null;
         }
 
         var existingProject = projects.FirstOrDefault(x => x.Id == projectId);
         if (existingProject == null)
         {
-            Console.WriteLine("Project not found");
-            Console.ReadKey();
+            OutputDialog("Project not found");
             return null;
         }
 
         return existingProject;
+    }
+
+    public static void QuitOption()
+    {
+        Console.Clear();
+        Console.WriteLine("Do you want to exit? (y/n)");
+        var option = Console.ReadLine()!;
+
+        if (option.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+        {
+            Environment.Exit(0);
+        }
+    }
+
+    public static void OutputDialog(string message)
+    {
+        Console.Clear();
+        Console.WriteLine(message);
+        Console.ReadKey();
+
     }
 }

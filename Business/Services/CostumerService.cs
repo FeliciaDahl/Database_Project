@@ -27,29 +27,32 @@ public class CostumerService : ICostumerService
         if (string.IsNullOrWhiteSpace(form.CostumerName))
             return null!;
 
-        await _costumerRepository.BeginTransactionAsync();
-
         var costumerEntity = await _costumerRepository.GetAsync(c => c.CostumerName.ToLower() == form.CostumerName.Trim().ToLower());
 
-        if (costumerEntity == null)
+        if (costumerEntity != null)
         {
-            try
-            {
+            Console.WriteLine("A costumer with this name already exist.");
+            return null!;
+        }
+
+        await _costumerRepository.BeginTransactionAsync();
+
+        try
+        {
                 costumerEntity = CostumerFactory.Create(form);
                _costumerRepository.Add(costumerEntity);
                 await _costumerRepository.SaveAsync();
 
                 await _costumerRepository.CommitTransactionAsync();
 
-            }
-            catch (Exception ex)
-            {
-                await _costumerRepository.RollbackTransactionAsync();
-                Debug.WriteLine($"Error: {ex.Message}");
-                return null!;
-            }
-
         }
+        catch (Exception ex)
+        {
+            await _costumerRepository.RollbackTransactionAsync();
+            Debug.WriteLine($"Error: {ex.Message}");
+            return null!;
+        }
+
             return CostumerFactory.Create(costumerEntity);
     }
 

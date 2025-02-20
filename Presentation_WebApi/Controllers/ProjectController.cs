@@ -22,8 +22,6 @@ public class ProjectController(IProjectService projectService) : ControllerBase
         if(ModelState.IsValid)
         {
             var project = await _projectService.CreateProjectAsync(form);
-            if(project != null)
-           
                 return Ok(project);
         }  
 
@@ -48,26 +46,26 @@ public class ProjectController(IProjectService projectService) : ControllerBase
         return Ok(project);
     }
 
-    [HttpPut]
-    public async Task<ActionResult<Project>> UpdateProject([FromBody] ProjectUpdateForm form)
+    [HttpPut("{id}")]
+    public async Task<ActionResult<Project>> UpdateProject(int id, [FromBody] ProjectUpdateForm form)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var updatedProject = await _projectService.UpdateProjectAsync(form);
+        var updatedProject = await _projectService.UpdateProjectAsync(id, form);
         if (updatedProject == null)
             return NotFound("Project not found.");
 
-        return Ok(updatedProject);
+        return Ok(updatedProject); 
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProject(int id)
     {
-        var success = await _projectService.DeleteProjectAsync(id);
-        if (!success)
+        var deleted = await _projectService.DeleteProjectAsync(id);
+        if (!deleted)
             return NotFound("Project not found or could not be deleted.");
 
-        return NoContent(); 
+        return Ok(deleted); 
     }
 }

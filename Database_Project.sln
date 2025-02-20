@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresentationConsole", "Pres
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Presentation_WebApi", "Presentation_WebApi\Presentation_WebApi.csproj", "{3CDCDB5E-970A-4992-8C09-ACBBCCB64552}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresentationMaui", "PresentationMaui\PresentationMaui.csproj", "{0E792503-FDD5-4E1C-B956-B9EF5AEF4AAE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,12 +33,6 @@ Global
 		{3CDCDB5E-970A-4992-8C09-ACBBCCB64552}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CDCDB5E-970A-4992-8C09-ACBBCCB64552}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CDCDB5E-970A-4992-8C09-ACBBCCB64552}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E792503-FDD5-4E1C-B956-B9EF5AEF4AAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E792503-FDD5-4E1C-B956-B9EF5AEF4AAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E792503-FDD5-4E1C-B956-B9EF5AEF4AAE}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{0E792503-FDD5-4E1C-B956-B9EF5AEF4AAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E792503-FDD5-4E1C-B956-B9EF5AEF4AAE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E792503-FDD5-4E1C-B956-B9EF5AEF4AAE}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

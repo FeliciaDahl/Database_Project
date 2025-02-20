@@ -27,18 +27,18 @@ public class CostumerApiService
 
     public async Task<Costumer?> GetCostumerByIdAsync(int id)
     {
-        return await _httpClient.GetFromJsonAsync<Costumer>($"https://your-api-url.com/api/costumers/{id}");
+        return await _httpClient.GetFromJsonAsync<Costumer>($"https://localhost:7123/api/costumers{id}");
     }
 
     public async Task<Costumer?> UpdateCostumerAsync(int id, CostumerUpdateForm form)
     {
-        var response = await _httpClient.PutAsJsonAsync($"https://your-api-url.com/api/costumers/{id}", form);
+        var response = await _httpClient.PutAsJsonAsync($"https://localhost:7123/api/costumers{id}", form);
         return await response.Content.ReadFromJsonAsync<Costumer>();
     }
 
     public async Task<bool> DeleteCostumerAsync(int id)
     {
-        var response = await _httpClient.DeleteAsync($"https://your-api-url.com/api/costumers/{id}");
+        var response = await _httpClient.DeleteAsync($"https://localhost:7123/api/costumers{id}");
         return response.IsSuccessStatusCode;
     }
 

@@ -26,30 +26,34 @@ public class ProjectManagerService : IProjectManagerService
         if (string.IsNullOrWhiteSpace(form.Email))
             return null!;
 
-        await _projectManagerRepository.BeginTransactionAsync();
-
         var projectManagerEntity = await _projectManagerRepository.GetAsync(pm => pm.Email.ToLower() == form.Email.Trim().ToLower());
 
-        if (projectManagerEntity == null)
-        { 
-            try
-            {
-                projectManagerEntity = ProjectManagerFactory.Create(form);
-                _projectManagerRepository.Add(projectManagerEntity);
-                await _projectManagerRepository.SaveAsync();
+        if (projectManagerEntity != null)
+        {
+            Console.WriteLine("A project manager with this Email already exist.");
+            return null!;
+        }
 
-                await _projectManagerRepository.CommitTransactionAsync();
+        await _projectManagerRepository.BeginTransactionAsync();
+
+        try
+        {
+            projectManagerEntity = ProjectManagerFactory.Create(form);
+            _projectManagerRepository.Add(projectManagerEntity);
+            await _projectManagerRepository.SaveAsync();
+
+            await _projectManagerRepository.CommitTransactionAsync();
 
                
-            }
-            catch (Exception ex)
-            {
-                await _projectManagerRepository.RollbackTransactionAsync();
-
-                Debug.WriteLine($"Error: {ex.Message}");
-                return null!;
-            }
         }
+        catch (Exception ex)
+        {
+            await _projectManagerRepository.RollbackTransactionAsync();
+
+            Debug.WriteLine($"Error: {ex.Message}");
+            return null!;
+        }
+        
             return ProjectManagerFactory.Create(projectManagerEntity);
     }
 

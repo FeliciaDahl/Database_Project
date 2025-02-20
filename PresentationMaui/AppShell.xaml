@@ -10,7 +10,7 @@
     Title="PresentationMaui">
 
   
-    <ShellContent Title="List" Route="ListPage" ContentTemplate="{DataTemplate pages:ListPage}"  />
+    <ShellContent Title="ListPage" Route="ListPage" ContentTemplate="{DataTemplate pages:ListPage}"  />
     <ShellContent Title="Add" Route="AddPage" ContentTemplate="{DataTemplate pages:AddPage}"  />
     <ShellContent Title="Edit" Route="EditPage" ContentTemplate="{DataTemplate pages:EditPage}"  />
     

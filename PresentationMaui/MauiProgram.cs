@@ -7,6 +7,8 @@ using PresentationMaui.Pages;
 using PresentationMaui.Services;
 using PresentationMaui.ViewModels;
 
+
+
 namespace PresentationMaui;
 
     public static class MauiProgram
@@ -15,7 +17,7 @@ namespace PresentationMaui;
     {
         var builder = MauiApp.CreateBuilder();
         builder
-            .UseMauiApp<App>()
+            .UseMauiApp<App>() 
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -49,9 +51,9 @@ namespace PresentationMaui;
         builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
         builder.Services.AddScoped<IStatusTypeRepository, StatusTypeRepository>();
 
-//#if DEBUG
-//        builder.Logging.AddDebug();
-//#endif
+#if DEBUG
+        builder.Logging.AddDebug();
+#endif
 
         return builder.Build();
     }

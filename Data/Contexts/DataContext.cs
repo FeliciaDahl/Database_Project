@@ -23,5 +23,8 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             .WithMany(x => x.Projects)
             .HasForeignKey(x => x.StatusTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+
     }
+
+
 }

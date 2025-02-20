@@ -21,7 +21,6 @@ public class CostumerController(ICostumerService costumerService) : ControllerBa
         {
             var costumer = await _costumerService.CreateCostumerAsync(form);
             if (costumer != null)
-
                 return Ok(costumer);
         }
 
@@ -29,13 +28,13 @@ public class CostumerController(ICostumerService costumerService) : ControllerBa
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Costumer>>> GetProjects()
+    public async Task<ActionResult<IEnumerable<Costumer>>> GetCostumer()
     {
         return Ok(await _costumerService.GetAllCostumersAsync());
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Costumer>> GetProject(int id)
+    public async Task<ActionResult<Costumer>> GetCostumer(int id)
     {
         var costumer = await _costumerService.GetCostumerAsync(p => p.Id == id);
 
@@ -46,12 +45,12 @@ public class CostumerController(ICostumerService costumerService) : ControllerBa
     }
 
     [HttpPut]
-    public async Task<ActionResult<Costumer>> UpdateCostumer([FromBody] CostumerUpdateForm form)
+    public async Task<ActionResult<Costumer>> UpdateCostumer(int id, [FromBody] CostumerUpdateForm form)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var updatedCostumer = await _costumerService.UpdateCostumerAsync(form);
+        var updatedCostumer = await _costumerService.UpdateCostumerAsync(id, form);
         if (updatedCostumer == null)
             return NotFound("Costumer not found.");
 

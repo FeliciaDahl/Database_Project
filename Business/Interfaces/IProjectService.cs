@@ -11,6 +11,6 @@ namespace Business.Interfaces
         Task<bool> DeleteProjectAsync(int id);
         Task<IEnumerable<Project>> GetAllProjectsAsync();
         Task<Project> GetProjectAsync(Expression<Func<ProjectEntity, bool>> predicate, Func<IQueryable<ProjectEntity>, IQueryable<ProjectEntity>>? includeExpression = null);
-        Task<bool> UpdateProjectAsync(int id, ProjectUpdateForm form);
+        Task<Project> UpdateProjectAsync(int id, ProjectUpdateForm form);
     }
 }
