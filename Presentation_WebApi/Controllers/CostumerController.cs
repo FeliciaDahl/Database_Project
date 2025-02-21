@@ -1,8 +1,6 @@
 ﻿using Business.Dto;
 using Business.Interfaces;
 using Business.Models;
-using Business.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation_WebApi.Controllers;

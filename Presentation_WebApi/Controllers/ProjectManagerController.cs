@@ -53,7 +53,7 @@ public class ProjectManagerController(IProjectManagerService projectManagerServi
 
         var updatedProjectManager = await _projectManagerService.UpdateProjectManagerAsync(id, form);
         if (updatedProjectManager == null)
-            return NotFound("ProjectManager not found.");
+            return NotFound("Project manager not found.");
 
         return Ok(updatedProjectManager);
     }
@@ -63,7 +63,7 @@ public class ProjectManagerController(IProjectManagerService projectManagerServi
     {
         var success = await _projectManagerService.DeleteProjectManagerAsync(id);
         if (!success)
-            return NotFound("ProjectManager not found or could not be deleted.");
+            return NotFound("Project manager not found or could not be deleted.");
 
         return NoContent();
     }

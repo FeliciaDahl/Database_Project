@@ -5,8 +5,6 @@ using Business.Interfaces;
 using Business.Models;
 using Data.Entities;
 using Data.Interfaces;
-using Data.Repositories;
-using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
@@ -39,11 +37,11 @@ public class CostumerService : ICostumerService
 
         try
         {
-                costumerEntity = CostumerFactory.Create(form);
-               _costumerRepository.Add(costumerEntity);
-                await _costumerRepository.SaveAsync();
+            costumerEntity = CostumerFactory.Create(form);
+            _costumerRepository.Add(costumerEntity);
+            await _costumerRepository.SaveAsync();
 
-                await _costumerRepository.CommitTransactionAsync();
+            await _costumerRepository.CommitTransactionAsync();
 
         }
         catch (Exception ex)
@@ -89,18 +87,18 @@ public class CostumerService : ICostumerService
 
             await _costumerRepository.BeginTransactionAsync();
 
-           existingEntity.CostumerName = string.IsNullOrWhiteSpace(form.CostumerName) ? existingEntity.CostumerName : form.CostumerName;
+            existingEntity.CostumerName = string.IsNullOrWhiteSpace(form.CostumerName) ? existingEntity.CostumerName : form.CostumerName;
 
             _costumerRepository.Update(existingEntity);
 
             await _costumerRepository.SaveAsync();
             await _costumerRepository.CommitTransactionAsync();
 
-             var updatedCostumer = new Costumer
-                    {
-                        Id = existingEntity.Id,
-                        CostumerName = existingEntity.CostumerName
-                    };
+            var updatedCostumer = new Costumer
+            {
+                Id = existingEntity.Id,
+                CostumerName = existingEntity.CostumerName
+            };
 
             return updatedCostumer;
         }

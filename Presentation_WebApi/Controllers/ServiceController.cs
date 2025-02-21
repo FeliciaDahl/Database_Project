@@ -1,8 +1,6 @@
 ﻿using Business.Dto;
 using Business.Interfaces;
 using Business.Models;
-using Business.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation_WebApi.Controllers;
@@ -25,6 +23,23 @@ public class ServiceController(IServiceService serviceService) : ControllerBase
         }
 
         return BadRequest();
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Service>>> GetServices()
+    {
+        return Ok(await _serviceService.GetAllServicesAsync());
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Service>> GetServices(int id)
+    {
+        var service = await _serviceService.GetServiceAsync(p => p.Id == id);
+
+        if (service == null)
+            return NotFound();
+
+        return Ok(service);
     }
 
 
@@ -50,4 +65,6 @@ public class ServiceController(IServiceService serviceService) : ControllerBase
 
         return NoContent();
     }
+
+   
 }

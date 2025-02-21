@@ -7,31 +7,27 @@ using Data.Entities;
 using Data.Interfaces;
 using Data.Repositories;
 using System.Diagnostics;
+using System.Linq.Expressions;
 
 namespace Business.Services;
 
-public class ServiceService : IServiceService
+public class ServiceService(IServiceRepository serviceRepository) : IServiceService
 {
-    private readonly IServiceRepository _serviceRepository;
-
-    public ServiceService(IServiceRepository serviceRepository)
-    {
-        _serviceRepository = serviceRepository;
-    }
+    private readonly IServiceRepository _serviceRepository = serviceRepository;
 
     public async Task<Service> CreateServiceAsync(ServiceRegistrationForm form)
     {
-        await _serviceRepository.BeginTransactionAsync();
-
-        if (string.IsNullOrWhiteSpace(form.ServiceName)) 
-            return null!;
-
         try
         {
+            if (string.IsNullOrWhiteSpace(form.ServiceName))
+                return null!;
+
+            await _serviceRepository.BeginTransactionAsync();
+
             var serviceEntity = ServiceFactory.Create(form);
             _serviceRepository.Add(serviceEntity);
-            await _serviceRepository.SaveAsync();
 
+            await _serviceRepository.SaveAsync();
             await _serviceRepository.CommitTransactionAsync();
 
             return ServiceFactory.Create(serviceEntity);
@@ -42,6 +38,25 @@ public class ServiceService : IServiceService
             Debug.WriteLine($"Error: {ex.Message}");
             return null!;
         }
+    }
+
+    public async Task<IEnumerable<Service>> GetAllServicesAsync()
+    {
+        var serviceEntity = await _serviceRepository.GetAllAsync();
+        return serviceEntity.Select(entity => ServiceFactory.Create(entity));
+    }
+
+
+    public async Task<Service?> GetServiceAsync(Expression<Func<ServiceEntity, bool>> expression, Func<IQueryable<ServiceEntity>, IQueryable<ServiceEntity>>? includeExpression = null)
+    {
+        var serviceEntity = await _serviceRepository.GetAsync(expression, includeExpression);
+
+        if (serviceEntity == null)
+        {
+            return null;
+        }
+
+        return ServiceFactory.Create(serviceEntity);
     }
 
     public async Task<Service> UpdateServiceAsync(int id, ServiceUpdateForm form)
@@ -97,9 +112,10 @@ public class ServiceService : IServiceService
                 Debug.WriteLine("Service not found");
                 return false!;
             }
+
             await _serviceRepository.BeginTransactionAsync();
 
-            _serviceRepository.Update(existingEntity);
+            _serviceRepository.Delete(existingEntity);
 
             await _serviceRepository.SaveAsync();
             await _serviceRepository.CommitTransactionAsync();

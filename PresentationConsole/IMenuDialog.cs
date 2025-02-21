@@ -10,5 +10,6 @@ namespace PresentationConsole
         Task MainMenu();
         Task UpdateProject();
         Task<Project?> ShowAndSelectProject();
+        Task<bool> DeleteProject();
     }
 }

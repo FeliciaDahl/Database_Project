@@ -5,22 +5,13 @@ using Business.Models;
 
 namespace PresentationConsole;
 
-public class MenuDialog : IMenuDialog
+public class MenuDialog(IProjectService projectService, ICostumerService costumerService, IProjectManagerService projectManagerService, IServiceService serviceService, IStatusTypeService statusTypeService) : IMenuDialog
 {
-    private readonly IProjectService _projectService;
-    private readonly ICostumerService _costumerService;
-    private readonly IProjectManagerService _projectManagerService;
-    private readonly IServiceService _serviceService;
-    private readonly IStatusTypeService _statusTypeService;
-
-    public MenuDialog(IProjectService projectService, ICostumerService costumerService, IProjectManagerService projectManagerService, IServiceService serviceService, IStatusTypeService statusTypeService)
-    {
-        _projectService = projectService;
-        _costumerService = costumerService;
-        _projectManagerService = projectManagerService;
-        _serviceService = serviceService;
-        _statusTypeService = statusTypeService;
-    }
+    private readonly IProjectService _projectService = projectService;
+    private readonly ICostumerService _costumerService = costumerService;
+    private readonly IProjectManagerService _projectManagerService = projectManagerService;
+    private readonly IServiceService _serviceService = serviceService;
+    private readonly IStatusTypeService _statusTypeService = statusTypeService;
 
     public async Task MainMenu()
     {
@@ -330,8 +321,7 @@ public class MenuDialog : IMenuDialog
 
                   $"---Status---\n" +
                   $"Project Status: {project.StatusTypeName}");
-
-                
+ 
         }
 
         Console.ReadKey();
@@ -578,8 +568,7 @@ public class MenuDialog : IMenuDialog
         var projects = await _projectService.GetAllProjectsAsync();
         if(projects == null || !projects.Any())
         {
-            Console.WriteLine("No projects found");
-            Console.ReadKey();
+            OutputDialog("No projects found");
             return null!;
         }
 
@@ -623,6 +612,5 @@ public class MenuDialog : IMenuDialog
         Console.Clear();
         Console.WriteLine(message);
         Console.ReadKey();
-
     }
 }

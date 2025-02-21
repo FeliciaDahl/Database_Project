@@ -14,7 +14,6 @@ public class StatusTypeController(IStatusTypeService statusTypeService) : Contro
     [HttpGet]
     public async Task<ActionResult<IEnumerable<StatusType>>> GetStatusType()
     {
-
         return Ok(await _statusTypeService.GetAllServicesAsync());
     }
 

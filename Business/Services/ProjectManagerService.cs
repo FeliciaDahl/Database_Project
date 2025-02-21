@@ -5,21 +5,15 @@ using Business.Interfaces;
 using Business.Models;
 using Data.Entities;
 using Data.Interfaces;
-using Data.Repositories;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
 namespace Business.Services;
 
-public class ProjectManagerService : IProjectManagerService
+public class ProjectManagerService(IProjectManagerRepository projectManagerRepository) : IProjectManagerService
 {
-    private readonly IProjectManagerRepository _projectManagerRepository;
+    private readonly IProjectManagerRepository _projectManagerRepository = projectManagerRepository;
 
-    public ProjectManagerService(IProjectManagerRepository projectManagerRepository)
-    {
-        _projectManagerRepository = projectManagerRepository;
-    }
-   
     public async Task<ProjectManager> CreateProjectManagerAsync(ProjectManagerRegistrationForm form)
     {
       
@@ -40,11 +34,10 @@ public class ProjectManagerService : IProjectManagerService
         {
             projectManagerEntity = ProjectManagerFactory.Create(form);
             _projectManagerRepository.Add(projectManagerEntity);
+
             await _projectManagerRepository.SaveAsync();
-
             await _projectManagerRepository.CommitTransactionAsync();
-
-               
+  
         }
         catch (Exception ex)
         {

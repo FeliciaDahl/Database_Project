@@ -16,7 +16,6 @@ public class ProjectController(IProjectService projectService) : ControllerBase
     private readonly IProjectService _projectService = projectService;
 
     [HttpPost]
-
     public async Task<IActionResult> Create(ProjectRegistrationForm form)
     {
         if(ModelState.IsValid)
@@ -31,7 +30,6 @@ public class ProjectController(IProjectService projectService) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
     {
-
         return Ok(await _projectService.GetAllProjectsAsync());
     }
 

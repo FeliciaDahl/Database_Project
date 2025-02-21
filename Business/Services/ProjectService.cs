@@ -23,8 +23,6 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
     public async Task<bool> CreateProjectAsync(ProjectRegistrationForm form)
     {
 
-        await _projectRepository.BeginTransactionAsync();
-
         try
         {
             var costumer = await _costumerService.GetCostumerAsync(c => c.Id == form.CostumerId);
@@ -37,13 +35,17 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
                 Debug.WriteLine("Required value is missing");
                 return false;
             }
+
+            await _projectRepository.BeginTransactionAsync();
+
             var projectEntity = ProjectFactory.Create(form);
 
             _projectRepository.Add(projectEntity);
             await _projectRepository.SaveAsync();
 
             await _projectRepository.CommitTransactionAsync();
-                return true; 
+
+            return true; 
         }
 
         catch (Exception ex)
@@ -147,22 +149,5 @@ public class ProjectService(IProjectRepository projectRepository, ICostumerServi
         }
 
     }
-
-    //public async Task<IEnumerable<Project>> SearchProjectsAsync(string category, string query)
-    //{
-    //    var projectEntites = await _projectRepository.GetAllAsync();
-
-    //    var projects = projectEntites.Select(p => ProjectFactory.Create(projectEntites)).ToList();
-
-    //    return category.ToLower() switch
-    //    {
-    //        "id" => projects.Where(p => p.Id.ToString().Contains(query)).ToList(),
-    //        "title" => projects.Where(p => p.Title.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(),
-    //        "projectmanager" => projects.Where(p => p.ProjectManager.FirstName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(),
-    //        "costumer" => projects.Where(p => p.Costumer.CostumerName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(),
-    //        _ => new List<Project>() // Om en okänd kategori används, returnera tom lista
-    //    };
-    //}
-
 
 }
